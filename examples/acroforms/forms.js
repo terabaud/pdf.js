@@ -6,7 +6,7 @@
 'use strict';
 
 // Specify the PDF with AcroForm here
-var pdfWithFormsPath = '../../test/pdfs/f1040.pdf';
+var pdfWithFormsPath = '../../test/pdfs/RadioCheckBox_AcroForm.pdf';
 
 var formFields = {};
 
@@ -76,14 +76,15 @@ function setupForm(div, content, viewport) {
           }
           if (item.fieldType == 'Btn') {
             input = createElementWithStyle('input', item);
-            if (item.flags & 32768) {
+            if (item.fieldFlags & 32768) {
               input.type = 'radio';
-               // radio button is not supported
-            } else if (item.flags & 65536) {
+              input.value = item.options[1];
+            } else if (item.fieldFlags & 65536) {
               input.type = 'button';
               // pushbutton is not supported
             } else {
               input.type = 'checkbox';
+              input.value = item.options[1];
             }
           }
           if (item.fieldType == 'Ch') {
@@ -91,7 +92,7 @@ function setupForm(div, content, viewport) {
             // select box is not supported
           }
           input.className = 'inputControl';
-          input.name = item.fullName;
+          input.name = item.fullName.split('.`')[0];
           input.title = item.alternativeText;
           assignFontStyle(input, item);
           bindInputItem(input, item);

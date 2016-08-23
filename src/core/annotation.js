@@ -619,6 +619,50 @@ var WidgetAnnotation = (function WidgetAnnotationClosure() {
       warn('unimplemented annotation type: Widget signature');
       this.setFlags(AnnotationFlag.HIDDEN);
     }
+    // https://github.com/mozilla/pdf.js/pull/7413/commits/ad87f4d9b1eba827f994a35035c2d7e7910d0e91
+    var dictOpts = dict.get('Opt');
+    if (data.fieldType === 'Ch' && dictOpts !== undefined) {
+      if (dictOpts.num) {
+        // The options are stored in a ref
+        var optionsRefNum = dict.map.Opt.num;
+        // Get XRefs synchronously (if not already loaded)
+        var optionsRef = new Ref(optionsRefNum,
+          dict.xref.entries[optionsRefNum].gen);
+        
+        dict.xref.fetch(optionsRef);
+
+        // Get the options from the xref array
+        if (dict.xref.cache[optionsRefNum]) {
+          data.options = dict.xref.cache[optionsRefNum];
+        }
+
+      } else {
+        data.options = dictOpts;
+      }
+
+      data.options.map(function (s) {
+        // convert UTF-16 Big Endian to plain UTF-8 without BOM
+        if (!s) return s;
+        if (s[0] == '\xFE' && s[1] == '\xFF') s = s.slice(2);
+        s = s.replace(/\x00/g,"");  
+        return s;
+      });
+    }
+
+    if (data.fieldType === 'Btn') {
+      
+        // radio button
+        var appearanceState = dict.get('AP');
+        if (appearanceState && isDict(appearanceState)) {
+          var appearances = appearanceState.get('N');
+          data.options = ['Off'];
+          for (var key in appearances.map) {
+              if (key !== 'Off') data.options.push(key);
+          }
+        }
+        console.log(data);
+
+    }
 
     // Building the full field name by collecting the field and
     // its ancestors 'T' data and joining them using '.'.
