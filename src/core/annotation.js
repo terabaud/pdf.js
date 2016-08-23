@@ -641,7 +641,8 @@ var WidgetAnnotation = (function WidgetAnnotationClosure() {
       }
 
       data.options.map(function (s) {
-        // convert UTF-16 Big Endian to plain UTF-8 without BOM
+        // options are sometimes UTF-16 Big Endian encoded.
+        // convert to plain UTF-8 without BOM
         if (!s) return s;
         if (s[0] == '\xFE' && s[1] == '\xFF') s = s.slice(2);
         s = s.replace(/\x00/g,"");  
@@ -650,7 +651,6 @@ var WidgetAnnotation = (function WidgetAnnotationClosure() {
     }
 
     if (data.fieldType === 'Btn') {
-      
         // radio button
         var appearanceState = dict.get('AP');
         if (appearanceState && isDict(appearanceState)) {
@@ -660,8 +660,6 @@ var WidgetAnnotation = (function WidgetAnnotationClosure() {
               if (key !== 'Off') data.options.push(key);
           }
         }
-        console.log(data);
-
     }
 
     // Building the full field name by collecting the field and
