@@ -6,7 +6,7 @@
 'use strict';
 
 // Specify the PDF with AcroForm here
-var pdfWithFormsPath = '../../test/pdfs/RadioCheckBox_AcroForm.pdf';
+var pdfWithFormsPath = '../../test/pdfs/Tax.pdf';
 
 var formFields = {};
 

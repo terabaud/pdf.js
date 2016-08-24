@@ -54,6 +54,7 @@ var ColorSpace = coreColorSpace.ColorSpace;
 var ObjectLoader = coreObj.ObjectLoader;
 var FileSpec = coreObj.FileSpec;
 var OperatorList = coreEvaluator.OperatorList;
+var Ref = corePrimitives.Ref;
 
 /**
  * @class
@@ -640,15 +641,23 @@ var WidgetAnnotation = (function WidgetAnnotationClosure() {
         data.options = dictOpts;
       }
 
-      data.options.map(function (s) {
-        // options are sometimes UTF-16 Big Endian encoded.
-        // convert to plain UTF-8 without BOM
-        if (!s) return s;
-        if (s[0] == '\xFE' && s[1] == '\xFF') s = s.slice(2);
-        s = s.replace(/\x00/g,"");  
-        return s;
+      // options are sometimes UTF-16 Big Endian encoded.
+      // Convert to plain UTF-8 without BOM:
+      var noBigEndian = function(str){
+        return (typeof str === 'string' && 
+          str[0] === '\xFE' && str[1] === '\xFF') ?
+          str.slice(2).replace(/\x00/g, '') : str;
+      };
+      data.options = data.options.map(function (opt) {
+        // in most cases, the options are an array of strings.
+        // Sometimes, the options are an array of key-value pairs, 
+        // stored in a 2-size array per element
+        return opt.constructor === Array ? 
+          opt.map(noBigEndian) : noBigEndian(opt);
       });
     }
+
+    
 
     if (data.fieldType === 'Btn') {
         // radio button
@@ -657,7 +666,9 @@ var WidgetAnnotation = (function WidgetAnnotationClosure() {
           var appearances = appearanceState.get('N');
           data.options = ['Off'];
           for (var key in appearances.map) {
-              if (key !== 'Off') data.options.push(key);
+              if (key !== 'Off') {
+                data.options.push(key);
+              }
           }
         }
     }
