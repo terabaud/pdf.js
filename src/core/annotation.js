@@ -660,17 +660,39 @@ var WidgetAnnotation = (function WidgetAnnotationClosure() {
     
 
     if (data.fieldType === 'Btn') {
+      var defaultValue = 'Off';
+      if (data.fieldFlags & 32768) {
         // radio button
-        var appearanceState = dict.get('AP');
-        if (appearanceState && isDict(appearanceState)) {
-          var appearances = appearanceState.get('N');
-          data.options = ['Off'];
-          for (var key in appearances.map) {
-              if (key !== 'Off') {
-                data.options.push(key);
-              }
+        defaultValue = dict.get('AS') ? dict.get('AS').name : 'Off';
+      } else {
+        // check box
+        defaultValue = dict.get('V') ? dict.get('V').name : 'Off';
+      }
+      var appearanceState = dict.get('AP');
+      if (appearanceState && isDict(appearanceState)) {
+        var appearances = appearanceState.get('N');
+        data.options = ['Off'];
+        for (var key in appearances.map) {
+            if (key !== 'Off') {
+              data.options.push(key);
+            }
+        }
+      }
+      if (! data.options) {
+        data.options = ['Off', 'Yes'];
+        if (data.fieldFlags & 32768) {
+          if (/\.`(\d+)$/.test(data.fieldName)) {
+            data.options[1] = 'Opt' + data.fieldName.split('.`')[1];
+          } else {
+            data.options[1] = 'Opt' + Math.round(Math.random() * 1000);
           }
         }
+      }
+      if (data.options && data.options.length >= 2) {
+        data.fieldValue = (defaultValue === data.options[1]) ?
+          data.options[1] : '';
+      }
+      
     }
 
     // Building the full field name by collecting the field and
